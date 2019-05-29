@@ -6,7 +6,7 @@ Hao Ye, Ellen Bledsoe
 ``` r
 library(tidyverse)
 
-all_data <- readRDS("list_df.rds")
+all_data <- readRDS("list_df_full.RDS")
 df <- as_tibble(all_data[[params$dataset_index]])
 
 cat("My project metadata key is ", 
@@ -29,7 +29,7 @@ df %>%
 sr_vars <- character(num_sr_levels)
 for (i in seq(num_sr_levels))
 {
-  new_name <- paste0(i, "--", df[1, paste0("spatial_replication_level_", i, "_label")])
+  new_name <- paste0(i, "--", as.character(df[[1, paste0("spatial_replication_level_", i, "_label")]]))
   old_name <- paste0("spatial_replication_level_", i)
   sr_vars[i] <- new_name
   df <- rename(df, !!new_name := !!old_name)
@@ -41,6 +41,45 @@ for (i in seq(num_sr_levels))
 data_organization <- df %>%
   select(sr_vars)
 ```
+
+``` r
+# make pair-wise density plots to summarize organizational structure:
+# 
+library(GGally)
+my_bin <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    geom_bin2d(...) +
+    scale_fill_viridis_c()
+}
+
+pm <- ggpairs(data_organization, 
+                      lower = list(discrete = my_bin), 
+                      upper = list(discrete = "blank"), 
+              cardinality_threshold = NULL) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+print(pm)
+```
+
+    ## plot: [1,1] [==>------------------------------------------] 6% est: 0s
+    ## plot: [1,2] [=====>---------------------------------------] 12% est: 0s
+    ## plot: [1,3] [=======>-------------------------------------] 19% est: 0s
+    ## plot: [1,4] [==========>----------------------------------] 25% est: 0s
+    ## plot: [2,1] [=============>-------------------------------] 31% est: 0s
+    ## plot: [2,2] [================>----------------------------] 38% est: 1s
+    ## plot: [2,3] [===================>-------------------------] 44% est: 1s
+    ## plot: [2,4] [=====================>-----------------------] 50% est: 1s
+    ## plot: [3,1] [========================>--------------------] 56% est: 0s
+    ## plot: [3,2] [===========================>-----------------] 62% est: 0s
+    ## plot: [3,3] [==============================>--------------] 69% est: 0s
+    ## plot: [3,4] [=================================>-----------] 75% est: 0s
+    ## plot: [4,1] [====================================>--------] 81% est: 0s
+    ## plot: [4,2] [======================================>------] 88% est: 0s
+    ## plot: [4,3] [=========================================>---] 94% est: 0s
+    ## plot: [4,4] [=============================================]100% est: 0s
+
+![](data_report-14_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ``` r
 # generate contingency tables to summarize organizational structure:

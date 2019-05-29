@@ -6,7 +6,7 @@ Hao Ye, Ellen Bledsoe
 ``` r
 library(tidyverse)
 
-all_data <- readRDS("list_df.rds")
+all_data <- readRDS("list_df_full.RDS")
 df <- as_tibble(all_data[[params$dataset_index]])
 
 cat("My project metadata key is ", 
@@ -29,7 +29,7 @@ df %>%
 sr_vars <- character(num_sr_levels)
 for (i in seq(num_sr_levels))
 {
-  new_name <- paste0(i, "--", df[1, paste0("spatial_replication_level_", i, "_label")])
+  new_name <- paste0(i, "--", as.character(df[[1, paste0("spatial_replication_level_", i, "_label")]]))
   old_name <- paste0("spatial_replication_level_", i)
   sr_vars[i] <- new_name
   df <- rename(df, !!new_name := !!old_name)
@@ -41,6 +41,28 @@ for (i in seq(num_sr_levels))
 data_organization <- df %>%
   select(sr_vars)
 ```
+
+``` r
+# make pair-wise density plots to summarize organizational structure:
+# 
+library(GGally)
+my_bin <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    geom_bin2d(...) +
+    scale_fill_viridis_c()
+}
+
+pm <- ggpairs(data_organization, 
+                      lower = list(discrete = my_bin), 
+                      upper = list(discrete = "blank"), 
+              cardinality_threshold = NULL) + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+print(pm)
+```
+
+![](data_report-105_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ``` r
 # generate contingency tables to summarize organizational structure:

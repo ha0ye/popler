@@ -54,7 +54,8 @@ my_bin <- function(data, mapping, ...) {
 
 pm <- ggpairs(data_organization, 
                       lower = list(discrete = my_bin), 
-                      upper = list(discrete = "blank")) + 
+                      upper = list(discrete = "blank"), 
+              cardinality_threshold = NULL) + 
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
